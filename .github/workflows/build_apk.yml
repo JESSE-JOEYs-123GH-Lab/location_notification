@@ -24,26 +24,22 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Install Dependencies
+      - name: Locate Flutter App & Install Dependencies
         run: |
-          if [ -d "location_notification" ]; then
-            cd location_notification && flutter pub get
-          else
-            flutter pub get
-          fi
+          TARGET_DIR=$(find . -maxdepth 2 -name "pubspec.yaml" -exec dirname {} \;)
+          echo "Found Flutter project at: $TARGET_DIR"
+          cd "$TARGET_DIR"
+          flutter pub get
 
       - name: Build APK
         run: |
-          if [ -d "location_notification" ]; then
-            cd location_notification && flutter build apk --release --no-tree-shake-icons
-          else
-            flutter build apk --release --no-tree-shake-icons
-          fi
+          TARGET_DIR=$(find . -maxdepth 2 -name "pubspec.yaml" -exec dirname {} \;)
+          cd "$TARGET_DIR"
+          flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: location-notification-apk
           path: |
-            location_notification/build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/flutter-apk/app-release.apk
+            **/build/app/outputs/flutter-apk/app-release.apk
