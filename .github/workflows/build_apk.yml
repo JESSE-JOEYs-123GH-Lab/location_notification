@@ -24,17 +24,18 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Locate Flutter App & Install Dependencies
+      - name: Repair and Build Flutter App
         run: |
-          TARGET_DIR=$(find . -maxdepth 2 -name "pubspec.yaml" -exec dirname {} \;)
-          echo "Found Flutter project at: $TARGET_DIR"
+          TARGET_DIR=$(find . -name "pubspec.yaml" -not -path "*/.*" -exec dirname {} \; | head -n 1)
+          echo "Flutter project gevonden in: $TARGET_DIR"
           cd "$TARGET_DIR"
-          flutter pub get
 
-      - name: Build APK
-        run: |
-          TARGET_DIR=$(find . -maxdepth 2 -name "pubspec.yaml" -exec dirname {} \;)
-          cd "$TARGET_DIR"
+          if [ ! -d "android" ]; then
+            echo "Android-map ontbreekt! 'flutter create .' wordt uitgevoerd..."
+            flutter create . --platforms=android --org=com.example
+          fi
+
+          flutter pub get
           flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK Artifact
